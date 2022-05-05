@@ -1,6 +1,14 @@
-{
-    "user_id": 12,
-    "first_name": "Kevin",
-    "last_name": "Findus",
-    "balance": 492.97
-}
+[
+    {
+        "user_id": 12,
+        "first_name": "Kevin",
+        "last_name": "Findus",
+        "balance": 492.97
+    },
+    {
+        "user_id": 22,
+        "first_name": "Laura",
+        "last_name": "Biding",
+        "balance": 5200.60
+    }
+]
