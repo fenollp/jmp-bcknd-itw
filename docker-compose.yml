@@ -1,0 +1,39 @@
+services:
+
+  pg:
+    build: ./database
+    environment:
+      _1: &PG_URL postgresql://jump:password@pg:5432/jump?sslmode=disable
+    ports:
+    - '127.0.0.1:5432:5432'
+
+  pghero:
+    depends_on: [pg]
+    image: docker.io/ankane/pghero:latest@sha256:22967e6b834d6ede73c1e5a25f21bd797b080b1b64cb345783949fde26b1deb4
+    environment:
+      DATABASE_URL: *PG_URL
+    ports:
+    - '127.0.0.1:8070:8070'
+
+  redis:
+    image: docker.io/library/redis:6-alpine@sha256:4091b9da835824257744fba095932e470078eb2c0025899ac1c6944b2d638c7e
+    environment:
+      _1: &REDIS_HOST 'redis:6379'
+    volumes:
+    - ./redis/redis.conf:/etc/redis/redis.conf:ro
+    command: redis-server /etc/redis/redis.conf
+    ports:
+    - '127.0.0.1:6379:6379'
+
+  srv:
+    depends_on:
+    - pg
+    - redis
+    build: ./srv
+    environment:
+      DATABASE_URL: *PG_URL
+      REDIS_HOST: *REDIS_HOST
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      PORT: '8088'
+    ports:
+    - '8088:8088'
