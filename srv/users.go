@@ -74,3 +74,7 @@ func (pg *pgClient) readUsers(ctx context.Context, req *listUsersReq) (users []U
 	}
 	return
 }
+
+func (s *Server) userForID(ctx context.Context, userID int64) (user User, err error) {
+	return //FIXME
+}

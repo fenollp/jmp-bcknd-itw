@@ -3,6 +3,7 @@ package srv
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -26,15 +27,21 @@ func (s *Server) HandleUsers(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, maxJSONBytesRead)
 	dec := json.NewDecoder(r.Body)
 	dec.DisallowUnknownFields()
+
+	req := &listUsersReq{count: 50}
+
 	if err := dec.Decode(&struct{}{}); err != io.EOF {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	ctx := r.Context()
-	req := &listUsersReq{count: 50}
 	rep, err := s.listUsers(ctx, req)
 	if err != nil {
+		if errors.Is(err, ErrBadRequest) {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -52,10 +59,10 @@ type listUsersReq struct {
 
 func (s *Server) validateListUsersReq(ctx context.Context, req *listUsersReq) error {
 	if req.fromID < 0 {
-		return fmt.Errorf("bad initial user ID: %v", req.fromID)
+		return fmt.Errorf("%w: bad initial user ID: %d", ErrBadRequest, req.fromID)
 	}
 	if req.count <= 0 {
-		return fmt.Errorf("bad count: %v", req.count)
+		return fmt.Errorf("%w: bad count: %v", ErrBadRequest, req.count)
 	}
 	return nil
 }
